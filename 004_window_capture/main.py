@@ -10,6 +10,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 # initialize the WindowCapture class
+
 wincap = WindowCapture('Albion Online Client')
 
 loop_time = time()
