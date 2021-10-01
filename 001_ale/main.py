@@ -56,6 +56,17 @@ while(True):
     screenshot = np.array(screenshot)
     screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)
 
+#### testing masking
+# define range wanted color in BGR
+    lower_val = np.array([8, 8, 45]) 
+    upper_val = np.array([33, 33, 254]) 
+    mask = cv.inRange(screenshot, lower_val, upper_val)
+    hasWall = np.sum(mask)
+    if hasWall > 0:
+        print('Wall detected!')
+    res = cv.bitwise_and(screenshot, screenshot, mask=mask)
+    fin = np.hstack((screenshot, res))
+    cv.imshow("Mask", mask)
 
 #### CV recognition and localization
 # draw rectangle example
@@ -65,13 +76,13 @@ while(True):
 #    vision_smalldot = Vision('badghost.png')
 #    vision_smalldot = Vision('fit.jpg')
 #    vision_smalldot = Vision('smalldot.png')
-    vision_smalldot = Vision('wall3.png')
-    points = vision_smalldot.find(screenshot, 0.75, 'rectangles')
+#    vision_smalldot = Vision('wall3.png')
+#    points = vision_smalldot.find(screenshot, 0.75, 'rectangles')
 
 #    points = vision_smalldot.find(screenshot, 0.35, 'rectangles')
 #    for bbox in points:
 #        cv.rectangle(screenshot, bbox, (bbox[0]+19, bbox[1]+19), (0, 0, 255))
-    print(len(points))
+#    print(len(points))
     
 
 #move & dispaly screenshot
@@ -95,14 +106,14 @@ while(True):
 
 
 
-####### keystrokes
-    hwnd = win32gui.FindWindow(None, "World's Biggest PAC-MAN - Google Chrome")
-    direction = win32con.VK_LEFT    #VK_LEFT = 37, VK_UP = 38, VK_RIGHT = 39, VK_DOWN = 40
-    direction += random.randint(0, 3)
-    VirtualKey = win32api.MapVirtualKey(direction, 0)
-    win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, direction, 0x0001|VirtualKey<<16)
-    time.sleep(0.05)
-    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, direction, 0x0001|VirtualKey<<16|0xC0<<24);  
+####### keystrokes --- WORKING GREAT
+##    hwnd = win32gui.FindWindow(None, "World's Biggest PAC-MAN - Google Chrome")
+##    direction = win32con.VK_LEFT    #VK_LEFT = 37, VK_UP = 38, VK_RIGHT = 39, VK_DOWN = 40
+##    direction += random.randint(0, 3)
+##    VirtualKey = win32api.MapVirtualKey(direction, 0)
+##    win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, direction, 0x0001|VirtualKey<<16)
+##    time.sleep(0.05)
+##    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, direction, 0x0001|VirtualKey<<16|0xC0<<24);  
 #######
 
 

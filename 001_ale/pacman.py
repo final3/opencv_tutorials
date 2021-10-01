@@ -10,5 +10,7 @@ PACMAN_SCREEN_H = 658
 
 PACMAN_SQUARE = 511
 
+PACMAN_WINDOW_NAME = 'World\'s Biggest PAC-MAN - Google Chrome'
+
 # This is how the screenshot is taken when the Chrome window starts at 0,0 @ 67% zoom
 # screenshot = pyautogui.screenshot(None, [286, 262, 617, 658])

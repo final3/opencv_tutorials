@@ -22,8 +22,8 @@ class Vision:
 
         # There are 6 methods to choose from:
         # TM_CCOEFF, TM_CCOEFF_NORMED, TM_CCORR, TM_CCORR_NORMED, TM_SQDIFF, TM_SQDIFF_NORMED
-        self.method = cv.TM_SQDIFF
-#        self.method = method
+#        self.method = cv.TM_SQDIFF
+        self.method = method
 
     def find(self, haystack_img, threshold=0.5, debug_mode=None):
         # run the OpenCV algorithm
