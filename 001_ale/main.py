@@ -14,7 +14,7 @@ import pacman
 from vision import Vision
 from windowcapture import WindowCapture
 
-
+# Stanford PACMAN paper http://cs229.stanford.edu/proj2017/final-reports/5241109.pdf
 # YOUTUBE video https://youtu.be/WymCpVUPWQ4?t=1135
 
 # SEND KEY TO INACTIVE WINDOW https://stackoverflow.com/questions/12996985/send-some-keys-to-inactive-window-with-python
@@ -62,12 +62,17 @@ while(True):
 #    cv.rectangle( screenshot, (19, 19), (38, 38), (0, 0, 255))
 
 # find all the dots
-#    vision_smalldot = Vision('smalldot.png')
-#    points = vision_smalldot.find(screenshot, 0.8, 'rectangles')
-
 #    vision_smalldot = Vision('badghost.png')
-    vision_smalldot = Vision('fit.jpg')
-    points = vision_smalldot.find(screenshot, 0.55, 'rectangles')
+#    vision_smalldot = Vision('fit.jpg')
+#    vision_smalldot = Vision('smalldot.png')
+    vision_smalldot = Vision('wall3.png')
+    points = vision_smalldot.find(screenshot, 0.75, 'rectangles')
+
+#    points = vision_smalldot.find(screenshot, 0.35, 'rectangles')
+#    for bbox in points:
+#        cv.rectangle(screenshot, bbox, (bbox[0]+19, bbox[1]+19), (0, 0, 255))
+    print(len(points))
+    
 
 #move & dispaly screenshot
     cv.imshow('Computer Vision', screenshot)
@@ -77,17 +82,16 @@ while(True):
 #### OCR Player1 score
 # 1UP score absolute coordinates (x: 282, y: 107, w: 160, h: 64)
 #    region2 = {'top': 195, 'left': 269, 'width': 160, 'height': 64}
-    region2 = {'top': 227, 'left': 349, 'width': 160, 'height': 27}
-    screenshot2 = mss.mss().grab(region2)
-    screenshot2 = np.array(screenshot2)
-    screenshot2 = cv.cvtColor(screenshot2, cv.COLOR_RGB2BGR)
-    
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
-    text = pytesseract.image_to_string(screenshot2)
-    print(text[:text.find('\n')])
-    cv.imshow('OCR', screenshot2)
-    hwnd2 = win32gui.FindWindow(None, 'OCR')
-    win32gui.MoveWindow(hwnd2, 3200, 10, 160, 464, True)
+#    region2 = {'top': 227, 'left': 349, 'width': 160, 'height': 27}
+#    screenshot2 = mss.mss().grab(region2)
+#    screenshot2 = np.array(screenshot2)
+#    screenshot2 = cv.cvtColor(screenshot2, cv.COLOR_RGB2BGR)
+#    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
+#    text = pytesseract.image_to_string(screenshot2)
+#    print(text[:text.find('\n')])
+#    cv.imshow('OCR', screenshot2)
+#    hwnd2 = win32gui.FindWindow(None, 'OCR')
+#    win32gui.MoveWindow(hwnd2, 3200, 10, 160, 464, True)
 
 
 
