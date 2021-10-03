@@ -8,53 +8,77 @@ import mss
 import mss.tools
 import random
 import pytesseract
-
-PACMAN_BOARD_W = 32
-PACMAN_BOARD_H = 32
+from vision import Vision
 
 # WARNING ALL THE ABS COORDINATES ARE AT 67% ZOOM  
 
-# printscreen offset with IE 
-
-PACMAN_SCREEN_X = 286
-PACMAN_SCREEN_Y = 262
-PACMAN_SCREEN_W = 617
-PACMAN_SCREEN_H = 658
-
-PACMAN_SQUARE = 511
+##### Definitions
+# Screen = pixel map including perimeter captured via screenshot
+# Map    = pixel map exluding perimeter captured via screenshot
+# Board  = char representation of the map including perimenter used for navidation
 
 PACMAN_WINDOW_NAME = 'World\'s Biggest PAC-MAN - Google Chrome'
-PACMAN_WINDOW_MINWIDTH = 928
+
+# browser window
+PACMAN_WINDOW_MINWIDTH = 928    # minimum browser window size
 PACMAN_WINDOW_MINHEIGHT = 902
 
-# This is how the screenshot is taken when the Chrome window starts at 0,0 @ 67% zoom
-# screenshot = pyautogui.screenshot(None, [286, 262, 617, 658])
+# pixel representation of the board
+PACMAN_SCREEN_X = 294           # pacman map rectangle including perimeter  
+PACMAN_SCREEN_Y = 264
+PACMAN_SCREEN_WIDTH  = 616  
+PACMAN_SCREEN_HEIGHT = 656      
+PACMAN_SCREEN_PERIMETER_THICKNESS = 13 
+PACMAN_MAP_X = PACMAN_SCREEN_X + PACMAN_SCREEN_PERIMETER_THICKNESS            # pacman map rectangle perimeter excluded PACMAN_SCREEN_ +/- THICKNESS
+PACMAN_MAP_Y = PACMAN_SCREEN_Y + PACMAN_SCREEN_PERIMETER_THICKNESS
+PACMAN_MAP_WIDTH  = (PACMAN_SCREEN_WIDTH - 2 * PACMAN_SCREEN_PERIMETER_THICKNESS)   
+PACMAN_MAP_HEIGHT = (PACMAN_SCREEN_HEIGHT - 2 * PACMAN_SCREEN_PERIMETER_THICKNESS) 
+   
 
-#### OCR Player1 score
-# 1UP score absolute coordinates (x: 282, y: 107, w: 160, h: 64)
-#    region2 = {'top': 195, 'left': 269, 'width': 160, 'height': 64}
-#    region2 = {'top': 227, 'left': 349, 'width': 160, 'height': 27}
-#    screenshot2 = mss.mss().grab(region2)
-#    screenshot2 = np.array(screenshot2)
-#    screenshot2 = cv.cvtColor(screenshot2, cv.COLOR_RGB2BGR)
-#    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe'
-#    text = pytesseract.image_to_string(screenshot2)
-#    print(text[:text.find('\n')])
-#    cv.imshow('OCR', screenshot2)
-#    hwnd2 = win32gui.FindWindow(None, 'OCR')
-#    win32gui.MoveWindow(hwnd2, 3200, 10, 160, 464, True)
+PACMAN_PLAYERSCORE_X = 350      # player1 score rectangle
+PACMAN_PLAYERSCORE_Y = 226
+PACMAN_PLAYERSCORE_WIDTH  = 150
+PACMAN_PLAYERSCORE_HEIGHT = 28
+
+# 2D matrix representation of the board
+PACMAN_PILLSPACE = 19   # pill to pill spacing (pixels) 
+PACMAN_MAXPILL = 30     # max pill number per row or col
+PACMAN_BOARD_WIDTH = 32 # 30 pills + 2 walls
+PACMAN_BOARD_NM = '-'   # NaM marker
+PACMAN_BOARD_WALL = 'w' # wall marker
+PACMAN_BOARD_SPILL = 'p'# small pill marker
+PACMAN_BOARD_BPILL = 'u'# big pill marker (power-up)
+PACMAN_BOARD_GHOST = 'G'# bad ghost marker
+PACMAN_BOARD_PRAY = 'g' # good ghost marker
+PACMAN_BOARD_PMAN = '@' # pacman marker
+PACMAN_BOARD_BLANK = ' '# empty cell marker
 
 class PacManBot:
 
-    score = -1
-    windowname = ''
+    score = -1          # player1 latest score
+    windowname = ''     # window name 
+    hwnd = None         # game window handle
+    board = [[PACMAN_BOARD_NM for j in range(PACMAN_BOARD_WIDTH)] for i in range(PACMAN_BOARD_WIDTH)]     # board map
+    mapscreenshot = None# latest screenshot
 
     def __init__(self, wname):
         self.score = 0
         self.windowname = wname
 
+    def get_mapscreenshot(self):
+        region = {'top': PACMAN_MAP_Y, 'left': PACMAN_MAP_X, 'width': PACMAN_MAP_WIDTH, 'height': PACMAN_MAP_HEIGHT}
+        self.mapscreenshot = mss.mss().grab(region)
+        self.mapscreenshot = np.array(self.mapscreenshot)
+        self.mapscreenshot = cv.cvtColor(self.mapscreenshot, cv.COLOR_RGB2BGR)
+        cv.imshow('MapScreen', self.mapscreenshot)
+        hwnd2 = win32gui.FindWindow(None, 'MapScreen')
+        win32gui.MoveWindow(hwnd2, 200, 1000, PACMAN_MAP_WIDTH, PACMAN_MAP_HEIGHT, True)
+
+
+#######        
+
     def get_player1_score(self):
-        region = {'top': 226, 'left': 350, 'width': 150, 'height': 28}
+        region = {'top': PACMAN_PLAYERSCORE_Y, 'left': PACMAN_PLAYERSCORE_X, 'width': PACMAN_PLAYERSCORE_WIDTH, 'height': PACMAN_PLAYERSCORE_HEIGHT}
         screenshot = mss.mss().grab(region)
         screenshot = np.array(screenshot)
         screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)
@@ -65,3 +89,26 @@ class PacManBot:
         text = pytesseract.image_to_string(screenshot)
         self.score = text[:text.find('\n')]
         print('Score updated: ', text[:text.find('\n')])
+
+    def set_board_perimeter(self):
+        for x in range(PACMAN_BOARD_WIDTH):         # top and bottom walls
+            self.board[x][0] = PACMAN_BOARD_WALL
+            self.board[x][PACMAN_BOARD_WIDTH-1] = PACMAN_BOARD_WALL   
+        for y in range(PACMAN_BOARD_WIDTH):         # left and right walls
+            self.board[0][y] = PACMAN_BOARD_WALL
+            self.board[PACMAN_BOARD_WIDTH-1][y] = PACMAN_BOARD_WALL
+        self.board[17][0] = PACMAN_BOARD_BLANK      # 4 board exits
+        self.board[17][PACMAN_BOARD_WIDTH-1] = PACMAN_BOARD_BLANK
+        self.board[0][17] = PACMAN_BOARD_BLANK
+        self.board[PACMAN_BOARD_WIDTH-1][17] = PACMAN_BOARD_BLANK
+
+    def print_board(self):
+        for x in range(PACMAN_BOARD_WIDTH):
+            row = ''
+            for y in range(PACMAN_BOARD_WIDTH):
+                row += self.board[x][y]
+            print(row)
+
+    def update_board(self):
+        vision_smalldot = Vision('smalldot.png')
+        points = vision_smalldot.find(mapscreenshot, 0.75, 'rectangles')

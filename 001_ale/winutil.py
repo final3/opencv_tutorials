@@ -40,5 +40,5 @@ class WinUtil:
             win32gui.MoveWindow(hwnd, neworigin[0], neworigin[1], neworigin[0]+newsize[0], neworigin[1]+newsize[1], True)
         else:
             print('Window: *', wname, '* NOT found - ')  
-
+        return(hwnd)
            
