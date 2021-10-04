@@ -30,7 +30,10 @@ else:
 cv.waitKey(1000)            # required to give time to complete WinUtil.moveresize 
 
 pmbot.get_mapscreenshot()
+pmbot.update_board()
+
 cv.waitKey(10000)
+
 pmbot.set_board_perimeter()
 pmbot.print_board()
 sys.exit()

@@ -111,4 +111,4 @@ class PacManBot:
 
     def update_board(self):
         vision_smalldot = Vision('smalldot.png')
-        points = vision_smalldot.find(mapscreenshot, 0.75, 'rectangles')
+        points = vision_smalldot.find(self.mapscreenshot, 0.75, 'rectangles')
