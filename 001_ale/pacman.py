@@ -24,16 +24,20 @@ PACMAN_WINDOW_MINWIDTH = 928    # minimum browser window size
 PACMAN_WINDOW_MINHEIGHT = 902
 
 # pixel representation of the board
-PACMAN_SCREEN_X = 294           # pacman map rectangle including perimeter  
-PACMAN_SCREEN_Y = 264
-PACMAN_SCREEN_WIDTH  = 616  
-PACMAN_SCREEN_HEIGHT = 656      
+PACMAN_SCREEN_X = 298           # pacman map rectangle including perimeter  
+PACMAN_SCREEN_Y = 266       
+PACMAN_SCREEN_WIDTH  = 584  
+PACMAN_SCREEN_HEIGHT = 584     
 PACMAN_SCREEN_PERIMETER_THICKNESS = 13 
 PACMAN_MAP_X = PACMAN_SCREEN_X + PACMAN_SCREEN_PERIMETER_THICKNESS            # pacman map rectangle perimeter excluded PACMAN_SCREEN_ +/- THICKNESS
 PACMAN_MAP_Y = PACMAN_SCREEN_Y + PACMAN_SCREEN_PERIMETER_THICKNESS
 PACMAN_MAP_WIDTH  = (PACMAN_SCREEN_WIDTH - 2 * PACMAN_SCREEN_PERIMETER_THICKNESS)   
 PACMAN_MAP_HEIGHT = (PACMAN_SCREEN_HEIGHT - 2 * PACMAN_SCREEN_PERIMETER_THICKNESS) 
-   
+
+# pixel representation of map pbject cell
+PACMAN_MAP_CELL     = 18        # cell square avg size
+PACMAN_MAP_CELL_ERR = 2         # cell square tollerance
+
 
 PACMAN_PLAYERSCORE_X = 350      # player1 score rectangle
 PACMAN_PLAYERSCORE_Y = 226
@@ -41,13 +45,12 @@ PACMAN_PLAYERSCORE_WIDTH  = 150
 PACMAN_PLAYERSCORE_HEIGHT = 28
 
 # 2D matrix representation of the board
-PACMAN_PILLSPACE = 19   # pill to pill spacing (pixels) 
 PACMAN_MAXPILL = 30     # max pill number per row or col
 PACMAN_BOARD_WIDTH = 32 # 30 pills + 2 walls
 PACMAN_BOARD_NM = '-'   # NaM marker
 PACMAN_BOARD_WALL = 'w' # wall marker
-PACMAN_BOARD_SPILL = 'p'# small pill marker
-PACMAN_BOARD_BPILL = 'u'# big pill marker (power-up)
+PACMAN_BOARD_SPILL = '.'# small pill marker
+PACMAN_BOARD_BPILL = '*'# big pill marker (power-up)
 PACMAN_BOARD_GHOST = 'G'# bad ghost marker
 PACMAN_BOARD_PRAY = 'g' # good ghost marker
 PACMAN_BOARD_PMAN = '@' # pacman marker
@@ -72,7 +75,7 @@ class PacManBot:
         self.mapscreenshot = cv.cvtColor(self.mapscreenshot, cv.COLOR_RGB2BGR)
         cv.imshow('MapScreen', self.mapscreenshot)
         hwnd2 = win32gui.FindWindow(None, 'MapScreen')
-        win32gui.MoveWindow(hwnd2, 200, 1000, PACMAN_MAP_WIDTH, PACMAN_MAP_HEIGHT, True)
+        win32gui.MoveWindow(hwnd2, 200, 1000, PACMAN_MAP_WIDTH+150, PACMAN_MAP_HEIGHT+150, True)
 
 
 #######        
@@ -109,6 +112,20 @@ class PacManBot:
                 row += self.board[x][y]
             print(row)
 
+    def print_board_row(self, rnum):
+        row = ''
+        for y in range(PACMAN_BOARD_WIDTH):
+            row += self.board[rnum][y]
+        print(row)
+
     def update_board(self):
         vision_smalldot = Vision('smalldot.png')
-        points = vision_smalldot.find(self.mapscreenshot, 0.75, 'rectangles')
+        points = vision_smalldot.find(self.mapscreenshot, 0.60, 'rectangles')
+#        for point in points:
+        for point in points[:32]:
+            y = int(np.floor((point[0] + PACMAN_MAP_CELL_ERR) / PACMAN_MAP_CELL) + 1)
+            x = int(np.floor((point[1] + PACMAN_MAP_CELL_ERR) / PACMAN_MAP_CELL) + 1)
+            self.board[x][y] = PACMAN_BOARD_SPILL
+            print('point: ', point, '[', y, ',', x,']')
+            self.print_board_row(x)
+#        print(points)
