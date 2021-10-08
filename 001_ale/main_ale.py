@@ -31,11 +31,13 @@ cv.waitKey(1000)            # required to give time to complete WinUtil.moveresi
 
 pmbot.get_mapscreenshot()
 pmbot.update_board()
+pmbot.get_walls()
 
-cv.waitKey(1000)
+cv.waitKey(10000)
 
-pmbot.set_board_perimeter()
+
 pmbot.print_board()
+print('CV coordinates are still not accurate enought')
 sys.exit()
 
 while (True):
@@ -43,7 +45,6 @@ while (True):
     if cv.waitKey(5) == ord('q'):
         cv.destroyAllWindows()
         break
-
 
 
 print('Done.')

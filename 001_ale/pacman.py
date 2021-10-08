@@ -35,8 +35,8 @@ PACMAN_MAP_WIDTH  = (PACMAN_SCREEN_WIDTH - 2 * PACMAN_SCREEN_PERIMETER_THICKNESS
 PACMAN_MAP_HEIGHT = (PACMAN_SCREEN_HEIGHT - 2 * PACMAN_SCREEN_PERIMETER_THICKNESS) 
 
 # pixel representation of map pbject cell
-PACMAN_MAP_CELL     = 18        # cell square avg size
-PACMAN_MAP_CELL_ERR = 2         # cell square tollerance
+PACMAN_MAP_CELL     = 19        # cell square avg size
+PACMAN_MAP_CELL_ERR = 1         # cell square tollerance
 
 
 PACMAN_PLAYERSCORE_X = 350      # player1 score rectangle
@@ -45,16 +45,18 @@ PACMAN_PLAYERSCORE_WIDTH  = 150
 PACMAN_PLAYERSCORE_HEIGHT = 28
 
 # 2D matrix representation of the board
-PACMAN_MAXPILL = 30     # max pill number per row or col
-PACMAN_BOARD_WIDTH = 32 # 30 pills + 2 walls
-PACMAN_BOARD_NM = '-'   # NaM marker
-PACMAN_BOARD_WALL = 'w' # wall marker
-PACMAN_BOARD_SPILL = '.'# small pill marker
-PACMAN_BOARD_BPILL = '*'# big pill marker (power-up)
-PACMAN_BOARD_GHOST = 'G'# bad ghost marker
-PACMAN_BOARD_PRAY = 'g' # good ghost marker
-PACMAN_BOARD_PMAN = '@' # pacman marker
-PACMAN_BOARD_BLANK = ' '# empty cell marker
+PACMAN_MAXPILL = 30             # max pill number per row or col
+PACMAN_BOARD_WIDTH = 32         # 30 pills + 2 walls
+PACMAN_BOARD_CAGE_WIDTH  = 5    # middle of the board ghostcage width
+PACMAN_BOARD_CAGE_HEIGHT = 3    # middle of the board ghostcage height 
+PACMAN_BOARD_NM = '-'           # NaM marker
+PACMAN_BOARD_WALL = 'w'         # wall marker
+PACMAN_BOARD_SPILL = '.'        # small pill marker
+PACMAN_BOARD_BPILL = '*'        # big pill marker (power-up)
+PACMAN_BOARD_GHOST = 'G'        # bad ghost marker
+PACMAN_BOARD_PRAY = 'g'         # good ghost marker
+PACMAN_BOARD_PMAN = '@'         # pacman marker
+PACMAN_BOARD_BLANK = ' '        # empty cell marker
 
 class PacManBot:
 
@@ -67,6 +69,37 @@ class PacManBot:
     def __init__(self, wname):
         self.score = 0
         self.windowname = wname
+        self.set_board_perimeter()
+        self.set_board_ghostcage()
+#####
+#    region = {'top': 264, 'left': 292, 'width': 617, 'height': 658}
+#    screenshot = mss.mss().grab(region)
+#    screenshot = np.array(screenshot)
+#    screenshot = cv.cvtColor(screenshot, cv.COLOR_RGB2BGR)#
+
+##### testing masking
+## define range wanted color in BGR
+#    lower_val = np.array([8, 8, 45]) 
+#    upper_val = np.array([33, 33, 254]) 
+#    mask = cv.inRange(screenshot, lower_val, upper_val)
+#    hasWall = np.sum(mask)
+#    if hasWall > 0:
+#        print('Wall detected!')
+#    res = cv.bitwise_and(screenshot, screenshot, mask=mask)
+#    fin = np.hstack((screenshot, res))
+#    cv.imshow("Mask", mask)    
+
+    def get_walls(self):    
+        wshot = self.mapscreenshot.copy()
+        lower_val = np.array([8, 8, 45])        # set color filter for the blue shades of the walls
+        upper_val = np.array([33, 33, 254])
+        mask = cv.inRange(wshot, lower_val, upper_val)
+        hasWall = np.sum(mask)
+        if hasWall > 0:
+            print('Wall detected!')
+        res = cv.bitwise_and(wshot, wshot, mask=mask)
+        fin = np.hstack((wshot, res))
+        cv.imshow("Mask", mask)    
 
     def get_mapscreenshot(self):
         region = {'top': PACMAN_MAP_Y, 'left': PACMAN_MAP_X, 'width': PACMAN_MAP_WIDTH, 'height': PACMAN_MAP_HEIGHT}
@@ -76,9 +109,6 @@ class PacManBot:
         cv.imshow('MapScreen', self.mapscreenshot)
         hwnd2 = win32gui.FindWindow(None, 'MapScreen')
         win32gui.MoveWindow(hwnd2, 200, 1000, PACMAN_MAP_WIDTH+150, PACMAN_MAP_HEIGHT+150, True)
-
-
-#######        
 
     def get_player1_score(self):
         region = {'top': PACMAN_PLAYERSCORE_Y, 'left': PACMAN_PLAYERSCORE_X, 'width': PACMAN_PLAYERSCORE_WIDTH, 'height': PACMAN_PLAYERSCORE_HEIGHT}
@@ -100,10 +130,17 @@ class PacManBot:
         for y in range(PACMAN_BOARD_WIDTH):         # left and right walls
             self.board[0][y] = PACMAN_BOARD_WALL
             self.board[PACMAN_BOARD_WIDTH-1][y] = PACMAN_BOARD_WALL
-        self.board[17][0] = PACMAN_BOARD_BLANK      # 4 board exits
-        self.board[17][PACMAN_BOARD_WIDTH-1] = PACMAN_BOARD_BLANK
-        self.board[0][17] = PACMAN_BOARD_BLANK
-        self.board[PACMAN_BOARD_WIDTH-1][17] = PACMAN_BOARD_BLANK
+        self.board[16][0] = PACMAN_BOARD_BLANK      # 4 board exits
+        self.board[16][PACMAN_BOARD_WIDTH-1] = PACMAN_BOARD_BLANK
+        self.board[0][16] = PACMAN_BOARD_BLANK
+        self.board[PACMAN_BOARD_WIDTH-1][16] = PACMAN_BOARD_BLANK
+
+    def set_board_ghostcage(self):
+        for y in range(PACMAN_BOARD_CAGE_WIDTH):
+            self.board[15][14+y] = PACMAN_BOARD_WALL
+            self.board[17][14+y] = PACMAN_BOARD_WALL
+        self.board[16][14] = PACMAN_BOARD_WALL
+        self.board[16][18] = PACMAN_BOARD_WALL        
 
     def print_board(self):
         for x in range(PACMAN_BOARD_WIDTH):
@@ -119,13 +156,23 @@ class PacManBot:
         print(row)
 
     def update_board(self):
-        vision_smalldot = Vision('smalldot.png')
-        points = vision_smalldot.find(self.mapscreenshot, 0.60, 'rectangles')
-#        for point in points:
-        for point in points[:32]:
+        
+        pshot = self.mapscreenshot.copy()
+        
+        vision_smallpill = Vision('smalldot.png')
+        points = vision_smallpill.find(pshot, 0.60, 'rectangles')
+
+        for point in points:
             y = int(np.floor((point[0] + PACMAN_MAP_CELL_ERR) / PACMAN_MAP_CELL) + 1)
             x = int(np.floor((point[1] + PACMAN_MAP_CELL_ERR) / PACMAN_MAP_CELL) + 1)
             self.board[x][y] = PACMAN_BOARD_SPILL
-            print('point: ', point, '[', y, ',', x,']')
-            self.print_board_row(x)
-#        print(points)
+        vision_bigpill = Vision('bigdot2.png') # bigdots needs to be detected after small dots because, the detection will find a small dot in a big dot
+        points = vision_bigpill.find(pshot, 0.60, 'rectangles')
+        for point in points:
+            y = int(np.floor((point[0] + PACMAN_MAP_CELL_ERR) / PACMAN_MAP_CELL) + 1)
+            x = int(np.floor((point[1] + PACMAN_MAP_CELL_ERR) / PACMAN_MAP_CELL) + 1)
+            self.board[x][y] = PACMAN_BOARD_BPILL
+            print('point: ', point, '[', x, ',', y,']')
+            self.print_board()
+        print(points)
+
