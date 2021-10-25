@@ -107,13 +107,13 @@ while(True):
 
 
 ####### keystrokes --- WORKING GREAT
-##    hwnd = win32gui.FindWindow(None, "World's Biggest PAC-MAN - Google Chrome")
-##    direction = win32con.VK_LEFT    #VK_LEFT = 37, VK_UP = 38, VK_RIGHT = 39, VK_DOWN = 40
-##    direction += random.randint(0, 3)
-##    VirtualKey = win32api.MapVirtualKey(direction, 0)
-##    win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, direction, 0x0001|VirtualKey<<16)
-##    time.sleep(0.05)
-##    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, direction, 0x0001|VirtualKey<<16|0xC0<<24);  
+    hwnd = win32gui.FindWindow(None, "World's Biggest PAC-MAN - Google Chrome")
+    direction = win32con.VK_LEFT    #VK_LEFT = 37, VK_UP = 38, VK_RIGHT = 39, VK_DOWN = 40
+    direction += random.randint(0, 3)
+    VirtualKey = win32api.MapVirtualKey(direction, 0)
+    win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, direction, 0x0001|VirtualKey<<16)
+    time.sleep(0.05)
+    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, direction, 0x0001|VirtualKey<<16|0xC0<<24);  
 #######
 
 
